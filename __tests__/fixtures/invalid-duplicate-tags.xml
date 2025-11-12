@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+    <event name="TestDuplicates">
+        <nominal>10</nominal>
+        <min>5</min>
+        <max>20</max>
+        <max>25</max>
+        <max>30</max>
+        <lifetime>3600</lifetime>
+    </event>
+</events>

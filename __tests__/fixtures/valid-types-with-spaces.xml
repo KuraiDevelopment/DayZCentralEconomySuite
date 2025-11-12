@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types>
+    <type name="TestItem">
+        <nominal>10</nominal>
+        <min>5</min>
+        <lifetime>3600</lifetime>
+    </type>
+    <type name="AnotherItem">
+        <nominal>15</nominal>
+        <min>10</min>
+        <lifetime>7200</lifetime>
+    </type>
+</types>

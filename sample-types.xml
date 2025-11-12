@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<types>
+    <type name="M4A1">
+        <nominal>5</nominal>
+        <lifetime>28800</lifetime>
+        <restock>0</restock>
+        <min>3</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>100</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="weapons"/>
+        <usage name="Military"/>
+        <value name="Tier3"/>
+    </type>
+    <type name="AKM">
+        <nominal>8</nominal>
+        <lifetime>28800</lifetime>
+        <restock>0</restock>
+        <min>5</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>100</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="weapons"/>
+        <usage name="Military"/>
+        <value name="Tier2"/>
+    </type>
+    <type name="BandageDressing">
+        <nominal>150</nominal>
+        <lifetime>3600</lifetime>
+        <restock>1800</restock>
+        <min>100</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>5</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="1" deloot="0"/>
+        <category name="tools"/>
+        <usage name="Medic"/>
+        <usage name="Military"/>
+        <usage name="Town"/>
+        <value name="Tier1"/>
+    </type>
+    <type name="CanOpener">
+        <nominal>70</nominal>
+        <lifetime>3600</lifetime>
+        <restock>1800</restock>
+        <min>40</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>15</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="tools"/>
+        <usage name="Town"/>
+        <usage name="Village"/>
+        <usage name="Hunting"/>
+        <value name="Tier1"/>
+    </type>
+    <type name="TacticalBaconCan">
+        <nominal>60</nominal>
+        <lifetime>3600</lifetime>
+        <restock>1800</restock>
+        <min>40</min>
+        <quantmin>0</quantmin>
+        <quantmax>50</quantmax>
+        <cost>20</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="food"/>
+        <usage name="Military"/>
+        <value name="Tier2"/>
+    </type>
+    <type name="WaterBottle">
+        <nominal>80</nominal>
+        <lifetime>3600</lifetime>
+        <restock>1800</restock>
+        <min>50</min>
+        <quantmin>0</quantmin>
+        <quantmax>1000</quantmax>
+        <cost>10</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="containers"/>
+        <usage name="Town"/>
+        <usage name="Village"/>
+        <usage name="Coast"/>
+        <value name="Tier1"/>
+    </type>
+    <type name="AliceBag_Green">
+        <nominal>15</nominal>
+        <lifetime>14400</lifetime>
+        <restock>0</restock>
+        <min>10</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>100</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="containers"/>
+        <usage name="Military"/>
+        <value name="Tier3"/>
+    </type>
+    <type name="TacticalGloves_Green">
+        <nominal>25</nominal>
+        <lifetime>7200</lifetime>
+        <restock>1800</restock>
+        <min>15</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>30</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="clothes"/>
+        <usage name="Military"/>
+        <value name="Tier2"/>
+    </type>
+    <type name="Grenade_RGD5">
+        <nominal>3</nominal>
+        <lifetime>28800</lifetime>
+        <restock>0</restock>
+        <min>2</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>100</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="explosives"/>
+        <usage name="Military"/>
+        <value name="Tier4"/>
+    </type>
+    <type name="SparkPlug">
+        <nominal>40</nominal>
+        <lifetime>7200</lifetime>
+        <restock>1800</restock>
+        <min>25</min>
+        <quantmin>-1</quantmin>
+        <quantmax>-1</quantmax>
+        <cost>50</cost>
+        <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0"/>
+        <category name="vehiclesparts"/>
+        <usage name="Industrial"/>
+        <value name="Tier2"/>
+    </type>
+</types>

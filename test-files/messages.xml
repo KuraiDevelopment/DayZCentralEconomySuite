@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<messages>
+    <!-- Welcome message on connect -->
+    <message onconnect="1">
+        <text>Welcome to the server, #name! Discord: discord.gg/example</text>
+    </message>
+    
+    <!-- Rules reminder every 30 minutes -->
+    <message repeat="1800" delay="900">
+        <text>Server rules: No combat logging, no glitching. Type /help for commands</text>
+    </message>
+    
+    <!-- Event announcement every hour -->
+    <message repeat="3600" delay="1800">
+        <text>Join weekend events! Check Discord for details and rewards</text>
+    </message>
+    
+    <!-- Shutdown countdown - 30 minutes -->
+    <message deadline="30" shutdown="1">
+        <text>Scheduled server restart in #tmin minutes</text>
+    </message>
+    
+    <!-- Shutdown countdown - 10 minutes -->
+    <message deadline="10" shutdown="1">
+        <text>Server restart in #tmin minutes - Find shelter!</text>
+    </message>
+    
+    <!-- Shutdown countdown - 5 minutes -->
+    <message deadline="5" shutdown="1">
+        <text>RESTART IN #tmin MINUTES - Get to safety!</text>
+    </message>
+    
+    <!-- Shutdown countdown - 1 minute -->
+    <message deadline="1" shutdown="1">
+        <text>RESTARTING IN #tmin MINUTE - LOGOUT NOW!</text>
+    </message>
+</messages>

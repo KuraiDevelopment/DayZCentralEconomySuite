@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+    efvnervnoeboem- - - - - -
+    <event name="TestEvent">
+        <nominal>10</nominal>
+        <min>5</min>
+        <max>20</max>
+    </event>
+    random garbage text here!!!
+</events>

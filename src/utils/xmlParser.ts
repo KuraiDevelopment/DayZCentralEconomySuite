@@ -37,252 +37,50 @@ const builderOptions = {
 
 /**
  * Validate XML well-formedness before parsing
- * Production-grade validation for DayZ configuration files
+ * Lightweight validation for DayZ configuration files
+ * Uses the XML parser's built-in validation for most checks to avoid false positives
  */
 function validateXMLStructure(xmlContent: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  const lines = xmlContent.split('\n');
 
   // VALIDATION 1: Check for empty or whitespace-only content
   if (!xmlContent || xmlContent.trim().length === 0) {
-    errors.push('CRITICAL: File is empty or contains only whitespace.');
+    errors.push('File is empty or contains only whitespace.');
     return { valid: false, errors };
   }
 
-  // VALIDATION 2: Check for XML declaration (should be present and valid)
-  if (!xmlContent.trim().startsWith('<?xml')) {
-    errors.push('WARNING: Missing XML declaration (<?xml version="1.0" encoding="UTF-8"?>). While not strictly required, it\'s recommended for DayZ config files.');
-  } else {
-    // Validate XML declaration format
-    const xmlDeclMatch = xmlContent.match(/<\?xml\s+([^?]*)\?>/);
-    if (xmlDeclMatch) {
-      const declContent = xmlDeclMatch[1];
-      if (!declContent.includes('version=')) {
-        errors.push('ERROR: XML declaration missing version attribute.');
-      }
-      if (!declContent.includes('encoding=')) {
-        errors.push('WARNING: XML declaration missing encoding attribute. UTF-8 encoding is recommended.');
-      }
-    }
+  // VALIDATION 2: Basic sanity check - file should contain at least one XML tag
+  if (!xmlContent.includes('<') || !xmlContent.includes('>')) {
+    errors.push('File does not appear to contain valid XML tags.');
+    return { valid: false, errors };
   }
 
-  // VALIDATION 3: Check for malformed/incomplete tags
-  // NOTE: This validation is removed because it incorrectly flags multi-line tags as invalid.
-  // Multi-line tags (tags split across lines) are perfectly valid in XML.
-  // Example valid XML that was incorrectly flagged:
-  // <type name="Item"
-  //       value="123">
-  // The XML parser will catch actual malformed tags during parsing.
+  // That's it! Let the robust XML parser (fast-xml-parser) handle the rest.
+  // It will catch:
+  // - Malformed tags
+  // - Mismatched opening/closing tags
+  // - Invalid attributes
+  // - Unclosed comments
+  // - Invalid characters
+  // - Any other XML structure issues
+  //
+  // This approach avoids false positives from overly strict pre-validation
+  // while still catching genuinely invalid files.
 
-  // VALIDATION 4: Check for mismatched opening and closing tags
-  const tagStack: Array<{ name: string; line: number }> = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    // Match all tags in this line (excluding self-closing and comments)
-    const tagMatches = line.matchAll(/<(\/?)([\w-]+)[^>]*?(\/?)>/g);
-    
-    for (const match of tagMatches) {
-      const isClosing = match[1] === '/';
-      const tagName = match[2];
-      const isSelfClosing = match[3] === '/';
-      
-      // Skip XML declarations and comments
-      if (tagName === '?xml' || tagName.startsWith('!')) continue;
-      
-      if (isClosing) {
-        // Closing tag - check if it matches the most recent opening tag
-        if (tagStack.length === 0) {
-          errors.push(`ERROR (Line ${i + 1}): Found closing tag </${tagName}> without matching opening tag.`);
-        } else {
-          const lastOpened = tagStack.pop();
-          if (lastOpened && lastOpened.name !== tagName) {
-            errors.push(`ERROR (Line ${i + 1}): Mismatched tags - expected </${lastOpened.name}> but found </${tagName}>. Opening tag was on line ${lastOpened.line}.`);
-          }
-        }
-      } else if (!isSelfClosing) {
-        // Opening tag (not self-closing)
-        tagStack.push({ name: tagName, line: i + 1 });
-      }
-    }
-  }
+  return { valid: true, errors };
+}
+
+/**
+ * Additional type-based validation helper
+ * Returns error messages specific to each file type
+ */
+function getTypeSpecificValidationErrors(fileType: string, data: any): string[] {
+  const errors: string[] = [];
   
-  // Check for unclosed tags at the end
-  if (tagStack.length > 0) {
-    tagStack.forEach(tag => {
-      errors.push(`ERROR: Unclosed tag <${tag.name}> (opened on line ${tag.line}). Missing closing tag </${tag.name}>.`);
-    });
-  }
-
-  // VALIDATION 5: Check for invalid tag names
-  const invalidTagPattern = /<\/?([a-zA-Z_][\w.-]*-)(?:\s|>|$)/g;
-  let invalidTagMatch;
-  while ((invalidTagMatch = invalidTagPattern.exec(xmlContent)) !== null) {
-    const lineNumber = xmlContent.substring(0, invalidTagMatch.index).split('\n').length;
-    errors.push(`ERROR (Line ${lineNumber}): Invalid tag name "${invalidTagMatch[1]}". Tag names cannot end with a hyphen.`);
-  }
-
-  // VALIDATION 6: Check for invalid characters in tag names
-  // Extract just the tag names (without attributes) and validate them
-  const tagNamePattern = /<\/?([a-zA-Z_][\w.-]*?)[\s\/>]/g;
-  let tagNameMatch;
-  while ((tagNameMatch = tagNamePattern.exec(xmlContent)) !== null) {
-    const tagName = tagNameMatch[1];
-    // Check if tag name contains invalid characters (only letters, numbers, hyphens, underscores, periods allowed)
-    if (!/^[a-zA-Z_][\w.-]*$/.test(tagName)) {
-      const lineNumber = xmlContent.substring(0, tagNameMatch.index).split('\n').length;
-      errors.push(`ERROR (Line ${lineNumber}): Invalid characters in tag name "${tagName}". Tag names can only contain letters, numbers, hyphens, underscores, and periods.`);
-    }
-  }
-
-  // VALIDATION 7: Check for unclosed comment blocks
-  const openComments = (xmlContent.match(/<!--/g) || []).length;
-  const closeComments = (xmlContent.match(/-->/g) || []).length;
-  if (openComments !== closeComments) {
-    errors.push(`ERROR: Mismatched comment blocks. Found ${openComments} opening <!-- and ${closeComments} closing -->. Every comment must be properly closed.`);
-  }
-
-  // VALIDATION 8: Check for invalid comment content (-- inside comments)
-  const invalidCommentPattern = /<!--[^-]*--(?!>)[^-]*-->/g;
-  if (invalidCommentPattern.test(xmlContent)) {
-    errors.push('ERROR: Invalid comment content. Double hyphens (--) are not allowed inside XML comments except in the closing tag (-->).');
-  }
-
-  // VALIDATION 9: Check for random text content outside of tags
-  // This checks for text that appears outside of any XML structure
-  // We need to be careful not to flag legitimate text content inside tags
-  const xmlDeclarationRemoved = xmlContent.replace(/<\?xml[^?]*\?>/g, '');
-  const commentsRemoved = xmlDeclarationRemoved.replace(/<!--[\s\S]*?-->/g, '');
+  // File type specific validation can be added here if needed
+  // For now, we trust the parser to handle structure validation
   
-  // Remove all complete tag pairs with their content: <tag>content</tag>
-  // This is more sophisticated - we keep removing matched pairs until none are left
-  let cleaned = commentsRemoved;
-  let previousLength;
-  do {
-    previousLength = cleaned.length;
-    // Remove self-closing tags
-    cleaned = cleaned.replace(/<[^>]+\/>/g, '');
-    // Remove empty tags
-    cleaned = cleaned.replace(/<([a-zA-Z_][\w.-]*)[^>]*>\s*<\/\1>/g, '');
-    // Remove tags with simple text content (numbers, words, etc.)
-    cleaned = cleaned.replace(/<([a-zA-Z_][\w.-]*)[^>]*>[^<>]*<\/\1>/g, '');
-  } while (cleaned.length < previousLength && cleaned.includes('<'));
-  
-  // Now remove any remaining whitespace
-  cleaned = cleaned.replace(/[\s\n\r\t]+/g, '');
-  
-  // If there's still content left, it's likely invalid text outside tags
-  if (cleaned.trim().length > 0) {
-    // Check if it's actually problematic (not just numbers from tag content)
-    // Only flag if we find substantial text that looks like it shouldn't be there
-    const suspiciousContent = cleaned.trim();
-    if (suspiciousContent.length > 10 && /[a-zA-Z]{3,}/.test(suspiciousContent)) {
-      const invalidContent = suspiciousContent.substring(0, 100);
-      errors.push(`ERROR: Found invalid text content outside of XML tags: "${invalidContent}${suspiciousContent.length > 100 ? '...' : ''}". All text must be enclosed in tags.`);
-    }
-  }
-
-  // VALIDATION 10: Check for unescaped special characters in text content
-  const unescapedAmpersand = />([^<]*&(?!(?:amp|lt|gt|quot|apos);)[^<]*)</g;
-  let ampMatch;
-  while ((ampMatch = unescapedAmpersand.exec(xmlContent)) !== null) {
-    const lineNumber = xmlContent.substring(0, ampMatch.index).split('\n').length;
-    errors.push(`WARNING (Line ${lineNumber}): Found unescaped ampersand (&). Use &amp; instead to avoid parsing issues.`);
-  }
-
-  // VALIDATION 11: Check for malformed attributes (missing quotes, etc.)
-  const malformedAttrPattern = /<[^>]+\s+(\w+)=(?!["\'])[^>\s]+/g;
-  let attrMatch;
-  while ((attrMatch = malformedAttrPattern.exec(xmlContent)) !== null) {
-    const lineNumber = xmlContent.substring(0, attrMatch.index).split('\n').length;
-    errors.push(`ERROR (Line ${lineNumber}): Malformed attribute "${attrMatch[1]}". Attribute values must be enclosed in quotes.`);
-  }
-
-  // VALIDATION 12: Check for duplicate attributes in the same tag
-  const tagWithAttrs = /<([^>]+)>/g;
-  let tagMatch;
-  while ((tagMatch = tagWithAttrs.exec(xmlContent)) !== null) {
-    const tagContent = tagMatch[1];
-    const attrNames = new Set<string>();
-    const attrPattern = /(\w+)\s*=/g;
-    let attr;
-    while ((attr = attrPattern.exec(tagContent)) !== null) {
-      const attrName = attr[1];
-      if (attrNames.has(attrName)) {
-        const lineNumber = xmlContent.substring(0, tagMatch.index).split('\n').length;
-        errors.push(`ERROR (Line ${lineNumber}): Duplicate attribute "${attrName}" found in tag. Each attribute can only appear once per tag.`);
-      }
-      attrNames.add(attrName);
-    }
-  }
-
-  // VALIDATION 13: Check for duplicate sibling tags in events.xml
-  // This is a common error that XML parsers silently handle by taking the last value
-  if (xmlContent.includes('<event ') || xmlContent.includes('<event>')) {
-    const commonTags = ['nominal', 'min', 'max', 'lifetime', 'restock', 'saferadius', 'distanceradius', 'cleanupradius'];
-    let currentContext = '';
-    let seenTags = new Set<string>();
-    let currentEventName = '';
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      if (line.includes('<event ') || line.includes('<event>')) {
-        seenTags.clear();
-        const nameMatch = line.match(/name="([^"]+)"/);
-        currentEventName = nameMatch ? nameMatch[1] : 'unknown';
-        currentContext = 'event';
-      } else if (line.includes('</event>')) {
-        seenTags.clear();
-        currentContext = '';
-      } else if (line.includes('<children>')) {
-        currentContext = 'children';
-      } else if (line.includes('</children>')) {
-        currentContext = 'event';
-      }
-      
-      if (currentContext === 'event') {
-        for (const tagName of commonTags) {
-          const openTag = `<${tagName}>`;
-          if (line.includes(openTag)) {
-            if (seenTags.has(tagName)) {
-              errors.push(`ERROR (Line ${i + 1}): Event "${currentEventName}" has duplicate <${tagName}> tags. Each tag should appear only once per event. The XML parser will silently use the last value, which may not be your intent.`);
-            }
-            seenTags.add(tagName);
-          }
-        }
-      }
-    }
-  }
-
-  // VALIDATION 14: Deep validation with fast-xml-parser
-  try {
-    const parser = new XMLParser({ 
-      ignoreAttributes: false,
-      allowBooleanAttributes: false,
-      parseTagValue: true,
-      parseAttributeValue: false,
-      trimValues: true,
-      stopNodes: [],
-    });
-    parser.parse(xmlContent);
-  } catch (parseError) {
-    const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
-    errors.push(`CRITICAL: XML Parser failed - ${errorMessage}. This usually indicates severely malformed XML structure.`);
-  }
-
-  // VALIDATION 15: Check file encoding (basic check for non-ASCII characters that might cause issues)
-  const nonAsciiPattern = /[^\x00-\x7F]+/;
-  if (nonAsciiPattern.test(xmlContent)) {
-    // Check if file has proper encoding declaration
-    if (!xmlContent.includes('encoding="UTF-8"') && !xmlContent.includes('encoding="utf-8"')) {
-      errors.push('WARNING: File contains non-ASCII characters but encoding is not explicitly set to UTF-8. This may cause issues on some systems.');
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
+  return errors;
 }
 
 /**

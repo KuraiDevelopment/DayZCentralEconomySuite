@@ -307,11 +307,17 @@ export function parseEconomyXML(xmlContent: string): FileImportResult {
     const parser = new XMLParser(parserOptions);
     const result = parser.parse(xmlContent) as EconomyXMLRoot;
 
-    if (!result.economycore) {
+    // Check if economycore exists - be flexible with the structure
+    if (!result || !result.economycore) {
+      // Try to provide helpful debugging info
+      const rootKeys = result ? Object.keys(result).join(', ') : 'none';
       return {
         success: false,
         itemCount: 0,
-        errors: ['Invalid cfgeconomycore.xml structure: missing <economycore> root element'],
+        errors: [
+          'Invalid cfgeconomycore.xml structure: missing <economycore> root element',
+          `Found root elements: ${rootKeys || 'empty document'}`
+        ],
       };
     }
 

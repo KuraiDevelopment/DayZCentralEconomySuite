@@ -67,10 +67,12 @@ function validateXMLStructure(xmlContent: string): { valid: boolean; errors: str
   }
 
   // VALIDATION 3: Check for malformed/incomplete tags
-  const incompleteTags = xmlContent.match(/<[^>]*$/gm);
-  if (incompleteTags && incompleteTags.length > 0) {
-    errors.push('CRITICAL: Found incomplete/unclosed tags. Check for tags missing the closing ">" character.');
-  }
+  // NOTE: This validation is removed because it incorrectly flags multi-line tags as invalid.
+  // Multi-line tags (tags split across lines) are perfectly valid in XML.
+  // Example valid XML that was incorrectly flagged:
+  // <type name="Item"
+  //       value="123">
+  // The XML parser will catch actual malformed tags during parsing.
 
   // VALIDATION 4: Check for mismatched opening and closing tags
   const tagStack: Array<{ name: string; line: number }> = [];

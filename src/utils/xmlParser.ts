@@ -450,6 +450,16 @@ export function parseEventsXML(xmlContent: string): FileImportResult {
  */
 export function parseSpawnableTypesXML(xmlContent: string): FileImportResult {
   try {
+    // Validate XML structure first
+    const validation = validateXMLStructure(xmlContent);
+    if (!validation.valid) {
+      return {
+        success: false,
+        itemCount: 0,
+        errors: validation.errors,
+      };
+    }
+
     const parser = new XMLParser(parserOptions);
     const result = parser.parse(xmlContent) as SpawnableTypesXMLRoot;
 
